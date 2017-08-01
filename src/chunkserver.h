@@ -4,9 +4,32 @@
 #include "common.h"
 #include <string>
 #include <service.hpp>
+#include <map>
+#include "master.h"
+#include <iostream>       
+#include <io.h>   
+#include <cstdio> 
+#include <fstream>  
+#include <sstream>  
+#include <cstdlib>
 
 class ChunkServer
 {
+private:
+	template<typename Ret, typename ...Args> 
+	void ChunkServer::bind(std::string rpcName, Ret(ChunkServer::*func)(Args...)); 
+	std::map<std::uint64_t,std::string> datamap;
+	bool isrun;
+	Master *m;
+	std::vector<ChunkHandle> chunkid;
+	//std::map<ChunkHandle,std::string> chunkroot; 
+	std::map<ChunkHandle,int> iscrun;//is chunk run
+	std::map<ChunkHandle,std::uint64_t> serial;
+	std::map<ChunkHandle,ChunkVersion> chunkversion;
+	std::map<ChunkHandle,uint64_t> primarytime;
+	std::vector<ChunkHandle> isprimary;
+	std::string root;
+	LightDS::Service serve;
 public:
 	enum MutationType : std::uint32_t
 	{
@@ -58,7 +81,7 @@ protected:
 	// RPCGrantLease is called by master
 	// mark the chunkserver as primary
 	GFSError
-		RPCGrantLease(std::vector<std::tuple<ChunkHandle /*handle*/, ChunkVersion /*newVersion*/, std::uint64_t /*expire timestamp*/>>);
+		RPCGrantLease(std::vector<std::tuple<ChunkHandle /*handle*/, ChunkVersion /*newVersion*/, std::uint64_t /*expire timestamp*/>> chunks);
 
 	// RPCUpdateVersion is called by master
 	// update the given chunks' version to 'newVersion'
